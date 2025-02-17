@@ -4,7 +4,7 @@
 
 #include "Modules/ModuleManager.h"
 
-class FMajulaModule : public IModuleInterface
+class FMajulaModule final : public IModuleInterface
 {
 public:
 
