@@ -29,6 +29,7 @@ public class Majula : ModuleRules
 			new string[]
 			{
 				"Core",
+				"AIModule"
 				// ... add other public dependencies that you statically link with here ...
 			}
 		);

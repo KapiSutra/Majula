@@ -5,28 +5,33 @@
 
 #include "Algo/MaxElement.h"
 #include "Majula/Core/Zone/MajulaZone.h"
+#include "Majula/Core/Zone/MajulaZoneRule.h"
 #include "Majula/Framework/MajulaManager.h"
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
-void UMajulaSubsystem::GetActorOverlappedZones(const AActor* const& Actor, TSet<AMajulaZone*>& Zones) const
+void UMajulaSubsystem::GetPawnOverlappedZones(const APawn* const& Pawn, TSet<AMajulaZone*>& Zones) const
 {
     Zones.Reset();
-    Actor->GetOverlappingActors(reinterpret_cast<TSet<AActor*>&>(Zones), AMajulaZone::StaticClass());
+    Pawn->GetOverlappingActors(reinterpret_cast<TSet<AActor*>&>(Zones), AMajulaZone::StaticClass());
 }
 
-AMajulaZone* UMajulaSubsystem::GetActorPrimaryOverlappedZone(const AActor* const& Actor) const
+AMajulaZone* UMajulaSubsystem::GetPawnPrimaryOverlappedZone(const APawn* const Pawn) const
 {
     TSet<AMajulaZone*> Zones;
-    GetActorOverlappedZones(Actor, Zones);
+    GetPawnOverlappedZones(Pawn, Zones);
 
-    TSet<AMajulaZone*> AllZones;
     if (Manager)
     {
-        Algo::Copy(Manager->UnboundZones, AllZones);
+        Algo::Copy(Manager->UnboundZones, Zones);
     }
-    Algo::Copy(Zones, AllZones);
 
-    const auto* Result = Algo::MaxElement(AllZones, [](AMajulaZone*& A, AMajulaZone*& B)
+    TSet<AMajulaZone*> ValidZones;
+    Algo::CopyIf(Zones, ValidZones, [Pawn](const AMajulaZone* InZone)
+    {
+        return InZone && InZone->ValidTest(Pawn);
+    });
+
+    const auto* Result = Algo::MaxElement(ValidZones, [](AMajulaZone*& A, AMajulaZone*& B)
     {
         return *A < *B;
     });
@@ -34,9 +39,29 @@ AMajulaZone* UMajulaSubsystem::GetActorPrimaryOverlappedZone(const AActor* const
     return Result ? *Result : nullptr;
 }
 
+ETeamAttitude::Type UMajulaSubsystem::GetAttitudeTowards(const APawn* const& SelfPawn, APawn* const& TargetPawn) const
+{
+    const auto SelfZone = GetPawnPrimaryOverlappedZone(SelfPawn);
+    const auto TargetZone = GetPawnPrimaryOverlappedZone(TargetPawn);
+
+    if (!SelfZone || SelfZone != TargetZone)
+    {
+        return ETeamAttitude::Neutral;
+    }
+
+    const auto ZoneRule = SelfZone->ZoneRule;
+    if (!IsValid(ZoneRule))
+    {
+        return ETeamAttitude::Neutral;
+    }
+
+    return SelfZone->ZoneRule.GetDefaultObject()->JudgeAttitude(SelfPawn, TargetPawn);
+}
+
+
 void UMajulaSubsystem::RegisterUnboundZone(AMajulaZone* Zone) const
 {
-    if (Manager && ensure(Manager->HasAuthority()) && Zone->bUnbound)
+    if (Manager && ensure(Manager->HasAuthority()) && Zone->bUnbound && !Manager->UnboundZones.Contains(Zone))
     {
         Manager->UnboundZones.Add(Zone);
     }

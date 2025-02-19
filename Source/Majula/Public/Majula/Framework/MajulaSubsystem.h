@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GenericTeamAgentInterface.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "MajulaSubsystem.generated.h"
 
@@ -20,10 +21,13 @@ public:
     static UMajulaSubsystem* Get(const UObject* WorldContextObject);
 
     UFUNCTION(BlueprintPure, Category = "Majula")
-    void GetActorOverlappedZones(const AActor* const& Actor, TSet<AMajulaZone*>& Zones) const;
+    void GetPawnOverlappedZones(const APawn* const& Pawn, TSet<AMajulaZone*>& Zones) const;
 
     UFUNCTION(BlueprintPure, Category = "Majula")
-    AMajulaZone* GetActorPrimaryOverlappedZone(const AActor* const& Actor) const;
+    AMajulaZone* GetPawnPrimaryOverlappedZone(const APawn* const Pawn) const;
+
+    UFUNCTION(BlueprintPure, Category = "Majula")
+    ETeamAttitude::Type GetAttitudeTowards(const APawn* const& SelfPawn, APawn* const& TargetPawn) const;
 
     UFUNCTION(BlueprintAuthorityOnly, Category = "Majula")
     void RegisterUnboundZone(AMajulaZone* Zone) const;

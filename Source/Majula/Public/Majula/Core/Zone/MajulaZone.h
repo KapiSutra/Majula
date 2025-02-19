@@ -32,7 +32,7 @@ protected:
     virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 #if UE_WITH_IRIS
     virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,
-                                              UE::Net::EFragmentRegistrationFlags RegistrationFlags) override
+                                              const UE::Net::EFragmentRegistrationFlags RegistrationFlags) override
     {
         UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);
     };
@@ -41,21 +41,18 @@ protected:
     virtual void PostNetReceive() override;
 
 public:
-    UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="MajulaZone"
-        , Replicated
-    )
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="MajulaZone", Replicated)
     int32 Priority = 0;
 
-    UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="MajulaZone"
-        , Replicated
-    )
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="MajulaZone", Replicated)
     uint8 bEnabled : 1;
 
-    UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="MajulaZone"
-        , Replicated
-    )
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="MajulaZone", Replicated)
     uint8 bUnbound : 1;
 
-    UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="MajulaZone")
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="MajulaZone", Replicated)
     TSubclassOf<UMajulaZoneRule> ZoneRule;
+
+    UFUNCTION(BlueprintPure, Category = "MajulaZone", BlueprintNativeEvent)
+    bool ValidTest(const APawn* const Pawn) const;
 };

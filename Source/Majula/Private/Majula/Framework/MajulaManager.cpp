@@ -24,7 +24,8 @@ void AMajulaManager::BeginPlay()
 
     if (HasAuthority())
     {
-        FallbackZone = GetWorld()->SpawnActorDeferred<AMajulaZone>(AMajulaZone::StaticClass(), FTransform::Identity,
+        FallbackZone = GetWorld()->SpawnActorDeferred<AMajulaZone>(AMajulaZone::StaticClass(),
+                                                                   FTransform::Identity,
                                                                    this, nullptr,
                                                                    ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
         FallbackZone->bUnbound = true;

@@ -15,9 +15,7 @@ AMajulaZone::AMajulaZone()
     PrimaryActorTick.bCanEverTick = false;
 
     bEnabled = true;
-
-    bReplicates = true;
-    bNetLoadOnClient = true;
+    bUnbound = 0;
 
     auto* CollisionBrush = GetBrushComponent();
     CollisionBrush->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
@@ -26,6 +24,9 @@ AMajulaZone::AMajulaZone()
     CollisionBrush->SetCollisionResponseToAllChannels(ECR_Ignore);
     CollisionBrush->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     CollisionBrush->Mobility = EComponentMobility::Static;
+
+    bReplicates = true;
+    bNetLoadOnClient = true;
     SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 }
 
@@ -33,6 +34,7 @@ AMajulaZone::AMajulaZone()
 void AMajulaZone::BeginPlay()
 {
     Super::BeginPlay();
+
 
     if (HasAuthority())
     {
@@ -55,6 +57,7 @@ void AMajulaZone::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& Ou
     DOREPLIFETIME_WITH_PARAMS(ThisClass, bEnabled, Params);
     DOREPLIFETIME_WITH_PARAMS(ThisClass, bUnbound, Params);
     DOREPLIFETIME_WITH_PARAMS(ThisClass, Priority, Params);
+    DOREPLIFETIME_WITH_PARAMS(ThisClass, ZoneRule, Params);
 }
 
 
@@ -66,6 +69,11 @@ auto AMajulaZone::operator<=>(const AMajulaZone& Other) const
 void AMajulaZone::PostNetReceive()
 {
     Super::PostNetReceive();
+}
+
+bool AMajulaZone::ValidTest_Implementation(const APawn* const Pawn) const
+{
+    return bEnabled;
 }
 
 
