@@ -3,6 +3,7 @@
 
 #include "Majula/Core/Agent/MajulaTeamAgentInterface.h"
 #include "Majula/Core/Agent/MajulaAgentComponent.h"
+#include "Majula/Core/Agent/MajulaAgentStrategy.h"
 
 
 UMajulaAgentComponent* IMajulaTeamAgentInterface::GetTeamAgentComponent() const
@@ -36,3 +37,4 @@ void IMajulaTeamAgentInterface::SetAgentStrategy(UMajulaAgentStrategy* AgentStra
     }
     Comp->SetTeamStrategy(AgentStrategy);
 }
+

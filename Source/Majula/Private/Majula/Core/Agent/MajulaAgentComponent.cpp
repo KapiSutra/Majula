@@ -3,10 +3,14 @@
 
 #include "Majula/Public/Majula/Core/Agent/MajulaAgentComponent.h"
 
+#include "Majula/Core/Agent/MajulaAgentStrategy.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 UMajulaAgentComponent::UMajulaAgentComponent()
 {
+    SetIsReplicatedByDefault(true);
+    bReplicateUsingRegisteredSubObjectList = true;
 }
 
 void UMajulaAgentComponent::BeginPlay()
@@ -35,10 +39,15 @@ void UMajulaAgentComponent::GetLifetimeReplicatedProps(TArray<class FLifetimePro
     DOREPLIFETIME_WITH_PARAMS(ThisClass, TeamStrategy, Params);
 }
 
-void UMajulaAgentComponent::SetTeamStrategy(UMajulaAgentStrategy* InTeamStrategy)
+void UMajulaAgentComponent::OnRep_TeamStrategy_Implementation(UMajulaAgentStrategy* OldTeamStrategy)
 {
-    TeamStrategy = InTeamStrategy;
-    PostMajulaAgentStrategyChanged.Broadcast();
+}
+
+void UMajulaAgentComponent::SetTeamStrategy(UMajulaAgentStrategy* NewTeamStrategy)
+{
+    AddReplicatedSubObject(NewTeamStrategy);
+    COMPARE_ASSIGN_AND_MARK_PROPERTY_DIRTY(ThisClass, TeamStrategy, NewTeamStrategy, this);
+    PostStrategyChanged.Broadcast();
 }
 
 void UMajulaAgentComponent::HandlePawnChanged(APawn* OldPawn, APawn* NewPawn)

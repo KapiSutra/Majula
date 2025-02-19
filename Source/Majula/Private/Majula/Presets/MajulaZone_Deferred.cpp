@@ -4,6 +4,7 @@
 #include "Majula/Presets/MajulaZone_Deferred.h"
 
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 
 bool FMajulaDeferredZoneDwellSet::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
@@ -25,7 +26,7 @@ bool FMajulaDeferredZoneDwellSet::NetSerialize(FArchive& Ar, UPackageMap* Map, b
         while (Count-- > 0)
         {
             UObject* PawnPtr = nullptr;
-            Map->SerializeObject(Ar, APawn::StaticClass(), PawnPtr);
+            bOutSuccess &= Map->SerializeObject(Ar, APawn::StaticClass(), PawnPtr);
             LocalPawns.Add(Cast<APawn>(PawnPtr));
         }
     }
@@ -47,6 +48,16 @@ void AMajulaZone_Deferred::BeginPlay()
     check(bUnbound == false);
 }
 
+void AMajulaZone_Deferred::BeginDestroy()
+{
+    Super::BeginDestroy();
+    for (auto&& TimerHandle : TimerHandles)
+    {
+        TimerHandle.Value.Invalidate();
+    }
+    TimerHandles.Empty();
+}
+
 void AMajulaZone_Deferred::NotifyActorBeginOverlap(AActor* OtherActor)
 {
     Super::NotifyActorBeginOverlap(OtherActor);
@@ -60,6 +71,7 @@ void AMajulaZone_Deferred::NotifyActorBeginOverlap(AActor* OtherActor)
             GetWorldTimerManager().SetTimer(TimerHandle, [this,Pawn]()
             {
                 DwellSet.LocalPawns.Add(Pawn);
+                MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, DwellSet, this);
             }, DelayTime, false);
         }
     }
@@ -81,6 +93,7 @@ void AMajulaZone_Deferred::NotifyActorEndOverlap(AActor* OtherActor)
                 TimerHandles.Remove(Pawn);
             }
             DwellSet.LocalPawns.Remove(Pawn);
+            MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, DwellSet, this);
         }
     }
 }

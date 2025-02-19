@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "MajulaTeamAgentInterface.generated.h"
 
+struct FMajulaTeamId;
 class UMajulaAgentStrategy;
 class UMajulaAgentComponent;
 // This class does not need to be modified.

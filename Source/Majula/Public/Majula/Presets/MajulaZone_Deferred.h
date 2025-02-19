@@ -14,6 +14,11 @@ struct MAJULA_API FMajulaDeferredZoneDwellSet
     TSet<TWeakObjectPtr<APawn>> LocalPawns;
 
     bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess);
+
+    virtual ~FMajulaDeferredZoneDwellSet()
+    {
+        LocalPawns.Empty();
+    };
 };
 
 template <>
@@ -38,6 +43,7 @@ public:
 
 protected:
     virtual void BeginPlay() override;
+    virtual void BeginDestroy() override;
 
 public:
     virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;

@@ -30,4 +30,10 @@ public:
     {
         return FMajulaTeamId::NoTeam;
     }
+
+    UFUNCTION(BlueprintPure, Category="Majula", DisplayName="Get Team Id")
+    static FMajulaTeamId GetMajulaTeamId(const APawn* const Pawn);
+
+    UFUNCTION(BlueprintPure, Category="Majula")
+    static FMajulaTeamId MakeMajulaTeamIdFromPlayerController(const APlayerController* const PC);
 };
