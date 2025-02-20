@@ -35,5 +35,5 @@ protected:
 
 public:
     UPROPERTY(Replicated)
-    TArray<TScriptInterface<IMajulaZoneInterface>> UnboundZones;
+    TArray<TObjectPtr<AActor>> UnboundZones;
 };

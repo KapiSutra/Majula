@@ -8,6 +8,7 @@
 #include "Majula/Core/Zone/MajulaZoneRule.h"
 #include "Majula/Framework/MajulaManager.h"
 #include "Majula/Helpers/MajulaLibrary.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
 void UMajulaSubsystem::GetPawnOverlappedZones(const APawn* const& Pawn,
@@ -105,9 +106,11 @@ void UMajulaSubsystem::RegisterUnboundZone(const TScriptInterface<IMajulaZoneInt
 
     const auto ZoneContext = IMajulaZoneInterface::Execute_GetZoneContext(Zone.GetObject());
 
-    if (Manager && ensure(Manager->HasAuthority()) && ZoneContext.bUnbound && !Manager->UnboundZones.Contains(Zone))
+    if (Manager && ensure(Manager->HasAuthority()) && ZoneContext.bUnbound && !Manager->UnboundZones.Contains(
+        Zone.GetObject()))
     {
-        Manager->UnboundZones.Add(Zone);
+        Manager->UnboundZones.Add(Cast<AActor>(Zone.GetObject()));
+        MARK_PROPERTY_DIRTY_FROM_NAME(AMajulaManager, UnboundZones, Manager);
     }
 }
 
@@ -122,6 +125,18 @@ void UMajulaSubsystem::Initialize(FSubsystemCollectionBase& Collection)
         {
             Manager = World->SpawnActor<AMajulaManager>(AMajulaManager::StaticClass());
         });
+
+        World->AddOnActorSpawnedHandler(
+            FOnActorSpawned::FDelegate::CreateWeakLambda(this, [this](AActor* ActorSpawned)
+            {
+                if (ActorSpawned->Implements<UMajulaZoneInterface>())
+                {
+                    if (IMajulaZoneInterface::Execute_GetZoneContext(ActorSpawned).bUnbound)
+                    {
+                        RegisterUnboundZone(TScriptInterface<IMajulaZoneInterface>(ActorSpawned));
+                    }
+                }
+            }));
 
 
         FWorldDelegates::OnWorldBeginTearDown.AddWeakLambda(this, [World,this](const UWorld* InWorld)
@@ -138,6 +153,7 @@ void UMajulaSubsystem::Deinitialize()
 {
     Super::Deinitialize();
 }
+
 
 UMajulaSubsystem* UMajulaSubsystem::Get(const UObject* WorldContextObject)
 {
