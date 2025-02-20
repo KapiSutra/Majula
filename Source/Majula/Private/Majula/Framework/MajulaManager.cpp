@@ -2,8 +2,6 @@
 
 
 #include "Majula/Framework/MajulaManager.h"
-
-#include "Majula/Core/Zone/MajulaZone.h"
 #include "Majula/Framework/MajulaSubsystem.h"
 #include "Net/UnrealNetwork.h"
 
@@ -21,18 +19,6 @@ AMajulaManager::AMajulaManager()
 void AMajulaManager::BeginPlay()
 {
     Super::BeginPlay();
-
-    if (HasAuthority())
-    {
-        FallbackZone = GetWorld()->SpawnActorDeferred<AMajulaZone>(AMajulaZone::StaticClass(),
-                                                                   FTransform::Identity,
-                                                                   this, nullptr,
-                                                                   ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-        FallbackZone->bUnbound = true;
-        FallbackZone->Priority = TNumericLimits<int>::Min();
-        FallbackZone->Rename(TEXT("MajulaFallbackZone"), this->GetOuter());
-        FallbackZone->FinishSpawning(FTransform::Identity);
-    }
 }
 
 void AMajulaManager::PostNetReceive()
@@ -51,5 +37,4 @@ void AMajulaManager::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
         .bIsPushBased = true
     };
     DOREPLIFETIME_WITH_PARAMS(ThisClass, UnboundZones, Params);
-    DOREPLIFETIME_WITH_PARAMS(ThisClass, FallbackZone, Params);
 }

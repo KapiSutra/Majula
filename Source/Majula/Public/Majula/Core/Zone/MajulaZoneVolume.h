@@ -3,25 +3,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MajulaZoneInterface.h"
 #include "GameFramework/Volume.h"
+#include "StructUtils/InstancedStruct.h"
 
 #if UE_WITH_IRIS
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 #endif
 
-#include "MajulaZone.generated.h"
+#include "MajulaZoneVolume.generated.h"
 
 class UMajulaZoneRule;
 
-UCLASS()
-class MAJULA_API AMajulaZone : public AVolume
+UCLASS(Const)
+class MAJULA_API AMajulaZoneVolume : public AVolume, public IMajulaZoneInterface
 {
     GENERATED_BODY()
 
 public:
     // Sets default values for this actor's properties
-    AMajulaZone();
-    auto operator<=>(const AMajulaZone&) const;
+    AMajulaZoneVolume();
 
 protected:
     // Called when the game starts or when spawned
@@ -41,18 +42,25 @@ protected:
     virtual void PostNetReceive() override;
 
 public:
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="MajulaZone", Replicated)
-    int32 Priority = 0;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="MajulaZone", Replicated,
+        meta=(ExposeOnSpawn, BaseStruct="/Script/Majula.MajulaZoneContext"))
+    FInstancedStruct ZoneSettings = FInstancedStruct::Make(FMajulaZoneContext());
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="MajulaZone", Replicated)
-    uint8 bEnabled : 1;
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="MajulaZone", Replicated)
-    uint8 bUnbound : 1;
-
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="MajulaZone", Replicated)
-    TSubclassOf<UMajulaZoneRule> ZoneRule;
-
-    UFUNCTION(BlueprintPure, Category = "MajulaZone", BlueprintNativeEvent)
-    bool ValidTest(const APawn* const Pawn) const;
+    virtual bool ValidTest_Implementation(const APawn* const Pawn) const override;
+    virtual FMajulaZoneContext GetZoneContext_Implementation() const override;
 };
+
+inline FMajulaZoneContext AMajulaZoneVolume::GetZoneContext_Implementation() const
+{
+    const auto Settings = ZoneSettings.GetPtr<FMajulaZoneContext>();
+    if (!Settings)
+    {
+        return FMajulaZoneContext();
+    }
+    return FMajulaZoneContext{
+        .Priority = Settings->Priority,
+        .bUnbound = Settings->bUnbound,
+        .ZoneRule = Settings->ZoneRule,
+    };
+}

@@ -45,6 +45,11 @@ void UMajulaAgentComponent::OnRep_TeamStrategy_Implementation(UMajulaAgentStrate
 
 void UMajulaAgentComponent::SetTeamStrategy(UMajulaAgentStrategy* NewTeamStrategy)
 {
+    if (NewTeamStrategy->GetClass() == TeamStrategy.GetClass())
+    {
+        return;
+    }
+
     AddReplicatedSubObject(NewTeamStrategy);
     COMPARE_ASSIGN_AND_MARK_PROPERTY_DIRTY(ThisClass, TeamStrategy, NewTeamStrategy, this);
     PostStrategyChanged.Broadcast();

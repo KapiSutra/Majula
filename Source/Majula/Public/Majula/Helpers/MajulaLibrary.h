@@ -7,6 +7,7 @@
 #include "Majula/Core/Team/MajulaTeamId.h"
 #include "MajulaLibrary.generated.h"
 
+class IMajulaZoneInterface;
 /**
  * 
  */
@@ -31,9 +32,12 @@ public:
         return FMajulaTeamId::NoTeam;
     }
 
-    UFUNCTION(BlueprintPure, Category="Majula", DisplayName="Get Team Id")
+    UFUNCTION(BlueprintPure, Category="Majula", DisplayName="Get Team Id (Majula)")
     static FMajulaTeamId GetMajulaTeamId(const APawn* const Pawn);
 
     UFUNCTION(BlueprintPure, Category="Majula")
     static FMajulaTeamId MakeMajulaTeamIdFromPlayerController(const APlayerController* const PC);
+
+    UFUNCTION(BlueprintPure, Category="Majula")
+    static AActor* GetZoneActor(const TScriptInterface<IMajulaZoneInterface>& Interface);
 };

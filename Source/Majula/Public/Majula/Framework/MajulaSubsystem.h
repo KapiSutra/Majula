@@ -7,8 +7,8 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "MajulaSubsystem.generated.h"
 
+class IMajulaZoneInterface;
 class AMajulaManager;
-class AMajulaZone;
 /**
  * 
  */
@@ -21,16 +21,16 @@ public:
     static UMajulaSubsystem* Get(const UObject* WorldContextObject);
 
     UFUNCTION(BlueprintPure, Category = "Majula")
-    void GetPawnOverlappedZones(const APawn* const& Pawn, TSet<AMajulaZone*>& Zones) const;
+    void GetPawnOverlappedZones(const APawn* const& Pawn, TArray<TScriptInterface<IMajulaZoneInterface>>& Zones) const;
 
     UFUNCTION(BlueprintPure, Category = "Majula")
-    AMajulaZone* GetPawnPrimaryOverlappedZone(const APawn* const Pawn) const;
+    TScriptInterface<IMajulaZoneInterface> GetPawnPrimaryOverlappedZone(const APawn* const Pawn) const;
 
     UFUNCTION(BlueprintPure, Category = "Majula")
     ETeamAttitude::Type GetAttitudeTowards(const APawn* const& SelfPawn, APawn* const& TargetPawn) const;
 
     UFUNCTION(BlueprintAuthorityOnly, Category = "Majula")
-    void RegisterUnboundZone(AMajulaZone* Zone) const;
+    void RegisterUnboundZone(const TScriptInterface<IMajulaZoneInterface>& Zone) const;
 
     UPROPERTY(Transient)
     TObjectPtr<AMajulaManager> Manager;

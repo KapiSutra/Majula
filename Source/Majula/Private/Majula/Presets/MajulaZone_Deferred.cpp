@@ -38,14 +38,13 @@ bool FMajulaDeferredZoneDwellSet::NetSerialize(FArchive& Ar, UPackageMap* Map, b
 AMajulaZone_Deferred::AMajulaZone_Deferred()
 {
     PrimaryActorTick.bCanEverTick = false;
-    bUnbound = false;
+    ZoneSettings.GetMutable<FMajulaZoneContext>().bUnbound = false;
 }
 
 // Called when the game starts or when spawned
 void AMajulaZone_Deferred::BeginPlay()
 {
     Super::BeginPlay();
-    check(bUnbound == false);
 }
 
 void AMajulaZone_Deferred::BeginDestroy()
@@ -112,10 +111,5 @@ void AMajulaZone_Deferred::GetLifetimeReplicatedProps(TArray<class FLifetimeProp
 
 bool AMajulaZone_Deferred::ValidTest_Implementation(const APawn* const Pawn) const
 {
-    if (!bEnabled)
-    {
-        return false;
-    }
-
     return DwellSet.LocalPawns.Contains(Pawn);
 }

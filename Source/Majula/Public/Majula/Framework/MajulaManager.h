@@ -9,7 +9,7 @@
 #endif
 #include "MajulaManager.generated.h"
 
-class AMajulaZone;
+class IMajulaZoneInterface;
 
 UCLASS(NotPlaceable, BlueprintInternalUseOnly)
 class MAJULA_API AMajulaManager : public AActor
@@ -35,8 +35,5 @@ protected:
 
 public:
     UPROPERTY(Replicated)
-    TArray<TObjectPtr<AMajulaZone>> UnboundZones;
-
-    UPROPERTY(Replicated)
-    TObjectPtr<AMajulaZone> FallbackZone;
+    TArray<TScriptInterface<IMajulaZoneInterface>> UnboundZones;
 };

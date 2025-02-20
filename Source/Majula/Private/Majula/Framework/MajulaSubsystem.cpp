@@ -4,20 +4,31 @@
 #include "Majula/Framework/MajulaSubsystem.h"
 
 #include "Algo/MaxElement.h"
-#include "Majula/Core/Zone/MajulaZone.h"
+#include "Majula/Core/Zone/MajulaZoneVolume.h"
 #include "Majula/Core/Zone/MajulaZoneRule.h"
 #include "Majula/Framework/MajulaManager.h"
+#include "Majula/Helpers/MajulaLibrary.h"
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
-void UMajulaSubsystem::GetPawnOverlappedZones(const APawn* const& Pawn, TSet<AMajulaZone*>& Zones) const
+void UMajulaSubsystem::GetPawnOverlappedZones(const APawn* const& Pawn,
+                                              TArray<TScriptInterface<IMajulaZoneInterface>>& Zones) const
 {
     Zones.Reset();
-    Pawn->GetOverlappingActors(reinterpret_cast<TSet<AActor*>&>(Zones), AMajulaZone::StaticClass());
+    TSet<AActor*> OverlappingActors;
+    Pawn->GetOverlappingActors(OverlappingActors);
+
+    for (auto&& OverlappingActor : OverlappingActors)
+    {
+        if (OverlappingActor->Implements<UMajulaZoneInterface>())
+        {
+            Zones.Add(TScriptInterface<IMajulaZoneInterface>(OverlappingActor));
+        }
+    }
 }
 
-AMajulaZone* UMajulaSubsystem::GetPawnPrimaryOverlappedZone(const APawn* const Pawn) const
+TScriptInterface<IMajulaZoneInterface> UMajulaSubsystem::GetPawnPrimaryOverlappedZone(const APawn* const Pawn) const
 {
-    TSet<AMajulaZone*> Zones;
+    TArray<TScriptInterface<IMajulaZoneInterface>> Zones;
     GetPawnOverlappedZones(Pawn, Zones);
 
     if (Manager)
@@ -25,16 +36,33 @@ AMajulaZone* UMajulaSubsystem::GetPawnPrimaryOverlappedZone(const APawn* const P
         Algo::Copy(Manager->UnboundZones, Zones);
     }
 
-    TSet<AMajulaZone*> ValidZones;
-    Algo::CopyIf(Zones, ValidZones, [Pawn](const AMajulaZone* InZone)
+    TArray<TScriptInterface<IMajulaZoneInterface>> ValidZones;
+    Algo::CopyIf(Zones, ValidZones, [Pawn](const TScriptInterface<IMajulaZoneInterface>& InZone)
     {
-        return InZone && InZone->ValidTest(Pawn);
+        return InZone.GetObject() && IMajulaZoneInterface::Execute_ValidTest(InZone.GetObject(), Pawn);
     });
 
-    const auto* Result = Algo::MaxElement(ValidZones, [](AMajulaZone*& A, AMajulaZone*& B)
-    {
-        return *A < *B;
-    });
+    const auto* Result = Algo::MaxElement(
+        ValidZones, [&Pawn](const TScriptInterface<IMajulaZoneInterface>& A,
+                            const TScriptInterface<IMajulaZoneInterface>& B)
+        {
+            const auto APriority = IMajulaZoneInterface::Execute_GetZoneContext(A.GetObject()).Priority;
+            const auto BPriority = IMajulaZoneInterface::Execute_GetZoneContext(B.GetObject()).Priority;
+
+            if (APriority != BPriority)
+            {
+                return IMajulaZoneInterface::Execute_GetZoneContext(A.GetObject()).Priority <
+                    IMajulaZoneInterface::Execute_GetZoneContext(B.GetObject()).Priority;
+            }
+
+            const auto ActorA = UMajulaLibrary::GetZoneActor(A);
+            const auto ActorB = UMajulaLibrary::GetZoneActor(B);
+
+            const auto DistanceA = Pawn->GetDistanceTo(ActorA);
+            const auto DistanceB = Pawn->GetDistanceTo(ActorB);
+
+            return DistanceA > DistanceB;
+        });
 
     return Result ? *Result : nullptr;
 }
@@ -49,19 +77,35 @@ ETeamAttitude::Type UMajulaSubsystem::GetAttitudeTowards(const APawn* const& Sel
         return ETeamAttitude::Neutral;
     }
 
-    const auto ZoneRule = SelfZone->ZoneRule;
+    if (!SelfZone.GetObject())
+    {
+        return ETeamAttitude::Neutral;
+    }
+
+    const auto ZoneRule = IMajulaZoneInterface::Execute_GetZoneContext(SelfZone.GetObject()).ZoneRule;
     if (!IsValid(ZoneRule))
     {
         return ETeamAttitude::Neutral;
     }
 
-    return SelfZone->ZoneRule.GetDefaultObject()->JudgeAttitude(SelfPawn, TargetPawn);
+    return ZoneRule.GetDefaultObject()->JudgeAttitude(SelfPawn, TargetPawn);
 }
 
 
-void UMajulaSubsystem::RegisterUnboundZone(AMajulaZone* Zone) const
+void UMajulaSubsystem::RegisterUnboundZone(const TScriptInterface<IMajulaZoneInterface>& Zone) const
 {
-    if (Manager && ensure(Manager->HasAuthority()) && Zone->bUnbound && !Manager->UnboundZones.Contains(Zone))
+    // if (!IsValid(Manager))
+    // {
+    //     GetWorld()->GetTimerManager().SetTimerForNextTick([this,Zone]()
+    //     {
+    //         RegisterUnboundZone(Zone);
+    //     });
+    //     return;
+    // }
+
+    const auto ZoneContext = IMajulaZoneInterface::Execute_GetZoneContext(Zone.GetObject());
+
+    if (Manager && ensure(Manager->HasAuthority()) && ZoneContext.bUnbound && !Manager->UnboundZones.Contains(Zone))
     {
         Manager->UnboundZones.Add(Zone);
     }
@@ -74,13 +118,9 @@ void UMajulaSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     auto* World = GetWorld();
     if (!World->IsNetMode(NM_Client))
     {
-        World->OnWorldBeginPlay.AddWeakLambda(this, [this,World]()
+        World->OnWorldPreBeginPlay.AddWeakLambda(this, [this,World]()
         {
-            Manager = World->SpawnActorDeferred<AMajulaManager>(AMajulaManager::StaticClass(), FTransform::Identity,
-                                                                nullptr, nullptr,
-                                                                ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-
-            Manager->FinishSpawning(FTransform::Identity);
+            Manager = World->SpawnActor<AMajulaManager>(AMajulaManager::StaticClass());
         });
 
 

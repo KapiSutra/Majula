@@ -28,3 +28,8 @@ FMajulaTeamId UMajulaLibrary::MakeMajulaTeamIdFromPlayerController(const APlayer
     }
     return FMajulaTeamId(PC->GetPlayerState<APlayerState>()->GetPlayerId());
 }
+
+AActor* UMajulaLibrary::GetZoneActor(const TScriptInterface<IMajulaZoneInterface>& Interface)
+{
+    return Cast<AActor>(Interface.GetObject());
+}

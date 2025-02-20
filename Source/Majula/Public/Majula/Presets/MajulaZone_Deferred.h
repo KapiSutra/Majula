@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Majula/Core/Zone/MajulaZone.h"
+#include "Majula/Core/Zone/MajulaZoneVolume.h"
 #include "MajulaZone_Deferred.generated.h"
 
 USTRUCT()
@@ -31,7 +31,7 @@ struct TStructOpsTypeTraits<FMajulaDeferredZoneDwellSet> : TStructOpsTypeTraitsB
 };
 
 UCLASS()
-class MAJULA_API AMajulaZone_Deferred : public AMajulaZone
+class MAJULA_API AMajulaZone_Deferred : public AMajulaZoneVolume
 {
     GENERATED_BODY()
 
