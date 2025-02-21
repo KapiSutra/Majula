@@ -103,7 +103,7 @@ void AMajulaZoneVolume_Deferred::HandleActorBeginOverlap(AActor* OverlappedActor
 
                 if (!LocalPawns.Contains(Pawn))
                 {
-                    LocalPawns.Add(Pawn);
+                    LocalPawns.AddUnique(Pawn);
                 }
 
                 // MARK_PROPERTY_DIRTY_FROM_NAME(AMajulaZoneVolume_Deferred, DwellSet, this);
