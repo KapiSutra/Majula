@@ -13,6 +13,7 @@ AMajulaManager::AMajulaManager()
     PrimaryActorTick.bCanEverTick = false;
     bReplicates = true;
     bNetLoadOnClient = false;
+    bAlwaysRelevant = true;
 }
 
 // Called when the game starts or when spawned

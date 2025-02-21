@@ -54,11 +54,6 @@ void AMajulaZoneVolume::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
     DOREPLIFETIME_WITH_PARAMS(ThisClass, ZoneSettings, Params);
 }
 
-void AMajulaZoneVolume::PostNetReceive()
-{
-    Super::PostNetReceive();
-}
-
 bool AMajulaZoneVolume::ValidTest_Implementation(const APawn* const Pawn) const
 {
     return true;

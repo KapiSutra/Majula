@@ -31,6 +31,6 @@ public:
     UFUNCTION(BlueprintCallable, Category="Majula")
     virtual UMajulaAgentStrategy* GetAgentStrategy() const;
 
-    UFUNCTION(BlueprintCallable, Category="Majula")
+    UFUNCTION(BlueprintCallable, Category="Majula", BlueprintAuthorityOnly)
     virtual void SetAgentStrategy(UMajulaAgentStrategy* AgentStrategy);
 };

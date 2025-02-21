@@ -15,7 +15,7 @@
 
 class UMajulaZoneRule;
 
-UCLASS(Const)
+UCLASS(Blueprintable)
 class MAJULA_API AMajulaZoneVolume : public AVolume, public IMajulaZoneInterface
 {
     GENERATED_BODY()
@@ -39,13 +39,10 @@ protected:
     };
 #endif
 
-    virtual void PostNetReceive() override;
-
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="MajulaZone", Replicated,
         meta=(ExposeOnSpawn, BaseStruct="/Script/Majula.MajulaZoneContext"))
     FInstancedStruct ZoneSettings = FInstancedStruct::Make(FMajulaZoneContext());
-
 
     virtual bool ValidTest_Implementation(const APawn* const Pawn) const override;
     virtual FMajulaZoneContext GetZoneContext_Implementation() const override;
@@ -53,14 +50,5 @@ public:
 
 inline FMajulaZoneContext AMajulaZoneVolume::GetZoneContext_Implementation() const
 {
-    const auto Settings = ZoneSettings.GetPtr<FMajulaZoneContext>();
-    if (!Settings)
-    {
-        return FMajulaZoneContext();
-    }
-    return FMajulaZoneContext{
-        .Priority = Settings->Priority,
-        .bUnbound = Settings->bUnbound,
-        .ZoneRule = Settings->ZoneRule,
-    };
+    return ZoneSettings.Get<FMajulaZoneContext>();
 }

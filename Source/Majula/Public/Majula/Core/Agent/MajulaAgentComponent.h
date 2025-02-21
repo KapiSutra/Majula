@@ -36,7 +36,8 @@ public:
 #endif
 
     //
-    UPROPERTY(BlueprintReadOnly, EditAnywhere, ReplicatedUsing="OnRep_TeamStrategy", Category="Majula", Instanced)
+    UPROPERTY(BlueprintReadOnly, EditAnywhere,
+        ReplicatedUsing="OnRep_TeamStrategy", Category="Majula", Instanced, NoClear)
     TObjectPtr<UMajulaAgentStrategy> TeamStrategy;
 
     UFUNCTION(BlueprintNativeEvent)

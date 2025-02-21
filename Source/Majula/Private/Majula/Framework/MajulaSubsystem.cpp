@@ -52,8 +52,7 @@ TScriptInterface<IMajulaZoneInterface> UMajulaSubsystem::GetPawnPrimaryOverlappe
 
             if (APriority != BPriority)
             {
-                return IMajulaZoneInterface::Execute_GetZoneContext(A.GetObject()).Priority <
-                    IMajulaZoneInterface::Execute_GetZoneContext(B.GetObject()).Priority;
+                return APriority < BPriority;
             }
 
             const auto ActorA = UMajulaLibrary::GetZoneActor(A);
@@ -73,23 +72,25 @@ ETeamAttitude::Type UMajulaSubsystem::GetAttitudeTowards(const APawn* const& Sel
     const auto SelfZone = GetPawnPrimaryOverlappedZone(SelfPawn);
     const auto TargetZone = GetPawnPrimaryOverlappedZone(TargetPawn);
 
-    if (!SelfZone || SelfZone != TargetZone)
+    if (!SelfZone || !TargetZone)
     {
         return ETeamAttitude::Neutral;
     }
 
-    if (!SelfZone.GetObject())
+    const auto SelfZoneRule = IMajulaZoneInterface::Execute_GetZoneContext(SelfZone.GetObject()).ZoneRule;
+    const auto TargetZoneRule = IMajulaZoneInterface::Execute_GetZoneContext(TargetZone.GetObject()).ZoneRule;
+
+    if (!IsValid(SelfZoneRule) || !IsValid(TargetZoneRule))
     {
         return ETeamAttitude::Neutral;
     }
 
-    const auto ZoneRule = IMajulaZoneInterface::Execute_GetZoneContext(SelfZone.GetObject()).ZoneRule;
-    if (!IsValid(ZoneRule))
+    if (SelfZoneRule != TargetZoneRule)
     {
         return ETeamAttitude::Neutral;
     }
 
-    return ZoneRule.GetDefaultObject()->JudgeAttitude(SelfPawn, TargetPawn);
+    return SelfZoneRule.GetDefaultObject()->JudgeAttitude(SelfPawn, TargetPawn);
 }
 
 

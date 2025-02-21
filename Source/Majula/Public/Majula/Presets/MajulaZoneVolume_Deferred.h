@@ -4,16 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Majula/Core/Zone/MajulaZoneVolume.h"
-#include "MajulaZone_Deferred.generated.h"
+#include "MajulaZoneVolume_Deferred.generated.h"
 
 USTRUCT()
 struct MAJULA_API FMajulaDeferredZoneDwellSet
 {
     GENERATED_BODY()
 
+    int32 Version = 0;
+
     TSet<TWeakObjectPtr<APawn>> LocalPawns;
 
-    bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess);
+    virtual bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess);
+    bool operator==(const FMajulaDeferredZoneDwellSet& Other) const;
 
     virtual ~FMajulaDeferredZoneDwellSet()
     {
@@ -27,34 +30,40 @@ struct TStructOpsTypeTraits<FMajulaDeferredZoneDwellSet> : TStructOpsTypeTraitsB
     enum
     {
         WithNetSerializer = true,
+        WithCopy = true,
+        WithIdenticalViaEquality = true,
     };
 };
 
 UCLASS()
-class MAJULA_API AMajulaZone_Deferred : public AMajulaZoneVolume
+class MAJULA_API AMajulaZoneVolume_Deferred : public AMajulaZoneVolume
 {
     GENERATED_BODY()
 
 public:
-    AMajulaZone_Deferred();
+    AMajulaZoneVolume_Deferred();
 
-    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-    float DelayTime = 5.f;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Majula Zone Deferred")
+    float DelayTime = 3.f;
 
-protected:
     virtual void BeginPlay() override;
     virtual void BeginDestroy() override;
-
-public:
-    virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
-    virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
     virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-
     virtual bool ValidTest_Implementation(const APawn* const Pawn) const override;
 
 protected:
+    // Iris dont call NetSerialize , dont know why
+    // UPROPERTY(Replicated)
+    // FMajulaDeferredZoneDwellSet DwellSet = FMajulaDeferredZoneDwellSet();
+
     UPROPERTY(Replicated)
-    FMajulaDeferredZoneDwellSet DwellSet;
+    TArray<TObjectPtr<AActor>> LocalPawns;
 
     TMap<TWeakObjectPtr<APawn>, FTimerHandle> TimerHandles;
+
+    UFUNCTION(BlueprintAuthorityOnly)
+    void HandleActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
+    UFUNCTION(BlueprintAuthorityOnly)
+    void HandleActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
 };
