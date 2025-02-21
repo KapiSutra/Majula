@@ -52,7 +52,7 @@ public:
     virtual bool ValidTest_Implementation(const APawn* const Pawn) const override;
 
 protected:
-    // Iris dont call NetSerialize , dont know why
+    // Iris Requires a Complicated NetSerializer , See FHitResultNetSerializer
     // UPROPERTY(Replicated)
     // FMajulaDeferredZoneDwellSet DwellSet = FMajulaDeferredZoneDwellSet();
 
