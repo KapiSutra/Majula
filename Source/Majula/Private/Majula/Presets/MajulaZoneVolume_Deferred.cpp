@@ -100,13 +100,9 @@ void AMajulaZoneVolume_Deferred::HandleActorBeginOverlap(AActor* OverlappedActor
             {
                 // DwellSet.LocalPawns.Add(Pawn);
                 // DwellSet.Version++;
-
-                if (!LocalPawns.Contains(Pawn))
-                {
-                    LocalPawns.AddUnique(Pawn);
-                }
-
                 // MARK_PROPERTY_DIRTY_FROM_NAME(AMajulaZoneVolume_Deferred, DwellSet, this);
+
+                LocalPawns.AddUnique(Pawn);
                 MARK_PROPERTY_DIRTY_FROM_NAME(AMajulaZoneVolume_Deferred, LocalPawns, this);
             }, DelayTime, false);
         }
@@ -128,10 +124,9 @@ void AMajulaZoneVolume_Deferred::HandleActorEndOverlap(AActor* OverlappedActor, 
             }
             // DwellSet.LocalPawns.Remove(Pawn);
             // DwellSet.Version++;
+            // MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, DwellSet, this);
 
             LocalPawns.Remove(Pawn);
-
-            // MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, DwellSet, this);
             MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, LocalPawns, this);
         }
     }

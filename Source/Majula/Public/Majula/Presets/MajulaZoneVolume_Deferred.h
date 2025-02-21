@@ -43,7 +43,7 @@ class MAJULA_API AMajulaZoneVolume_Deferred : public AMajulaZoneVolume
 public:
     AMajulaZoneVolume_Deferred();
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Majula Zone Deferred")
+    UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Majula Zone Deferred")
     float DelayTime = 3.f;
 
     virtual void BeginPlay() override;
@@ -57,7 +57,7 @@ protected:
     // FMajulaDeferredZoneDwellSet DwellSet = FMajulaDeferredZoneDwellSet();
 
     UPROPERTY(Replicated)
-    TArray<TObjectPtr<AActor>> LocalPawns;
+    TArray<TWeakObjectPtr<AActor>> LocalPawns;
 
     TMap<TWeakObjectPtr<APawn>, FTimerHandle> TimerHandles;
 
