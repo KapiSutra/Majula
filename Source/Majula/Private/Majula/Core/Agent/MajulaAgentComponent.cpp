@@ -26,7 +26,7 @@ void UMajulaAgentComponent::BeginPlay()
         {
             HandlePawnChanged(nullptr, Pawn);
         }
-        Controller->OnPossessedPawnChanged.AddDynamic(this, &UMajulaAgentComponent::HandlePawnChanged);
+        Controller->OnPossessedPawnChanged.AddUniqueDynamic(this, &UMajulaAgentComponent::HandlePawnChanged);
     }
 }
 

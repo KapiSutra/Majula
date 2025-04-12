@@ -54,8 +54,8 @@ void AMajulaZoneVolume_Deferred::BeginPlay()
 
     if (HasAuthority())
     {
-        OnActorBeginOverlap.AddDynamic(this, &AMajulaZoneVolume_Deferred::HandleActorBeginOverlap);
-        OnActorEndOverlap.AddDynamic(this, &AMajulaZoneVolume_Deferred::HandleActorEndOverlap);
+        OnActorBeginOverlap.AddUniqueDynamic(this, &AMajulaZoneVolume_Deferred::HandleActorBeginOverlap);
+        OnActorEndOverlap.AddUniqueDynamic(this, &AMajulaZoneVolume_Deferred::HandleActorEndOverlap);
     }
 }
 
