@@ -1,7 +1,7 @@
 ﻿// Copyright 2019-Present tarnishablec. All Rights Reserved.
 
 
-#include "Majula/Public/Majula/Core/Agent/MajulaAgentComponent.h"
+#include "Majula/Core/Agent/MajulaAgentComponent.h"
 
 #include "Majula/Core/Agent/MajulaAgentStrategy.h"
 #include "Net/UnrealNetwork.h"
